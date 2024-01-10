@@ -8,7 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #項目を追加するときはhantei_columnと処理を追加すればできる
-current_directory = os.getcwd()
+#!**消去している＊＊＊＊カレントディレクトリの指定
+# current_directory = os.getcwd()
+current_directory = r"/Users/member/Desktop/実験/Rikogaku/判定条件から結果を導出"
 def list_files_in_directory(directory_path):
     # os.listdir()でディレクトリ内のファイル/フォルダ名のリストを取得
     all_files_and_dirs = os.listdir(directory_path)
@@ -128,8 +130,8 @@ def acceldatatozero(data, n):
     return data_copy
 
 def main():
-    # folderpath = select_folder()
-    folderpath = r"/Users/member/Desktop/実験/Rikogaku/2023-12-05"
+    folderpath = select_folder()
+    # folderpath = r"/Users/member/Desktop/実験/Rikogaku/2023-12-05"
     fileList1 = list_files_in_directory(folderpath)
     dt = 0.05
     suffixes = ['x', 'y', 'z', 'pitch', 'roll', 'yaw']
@@ -145,12 +147,12 @@ def main():
     #判定用のデータフレーム
     hantei_df = pd.DataFrame(index = suffixes,columns=hantei_columns)
     #そう距離をまとめる
-    normal_all_distancedata = []
-    a_zero_all_distancedata = []
-    a_and_v_zero_all_distancedata = []
-    lowpass_all_distancedata = []
-    v_zero_all_distancedata = []
-    lowpass_and_v_zero_all_distancedata = []
+    normal_all_distancedata = [[],[],[]]
+    a_zero_all_distancedata = [[],[],[]]
+    a_and_v_zero_all_distancedata = [[],[],[]]
+    lowpass_all_distancedata = [[],[],[]]
+    v_zero_all_distancedata = [[],[],[]]
+    lowpass_and_v_zero_all_distancedata = [[],[],[]]
     # print(fileList)
     #ファイルぶん回す
     for i in fileList1:
@@ -192,7 +194,8 @@ def main():
                 #距離求める
                 raw_distance = integrate_using_trapezoidal(raw_velocity, dt)
                 keisan_df.at[suffixes[j],"raw_distance_data"] = raw_distance
-                normal_all_distancedata.append(all_distance(raw_distance))
+                normal_all_distancedata[j].append(all_distance(raw_distance))
+                hantei_df.at[suffixes[j],"raw"] = all_distance(raw_distance)
                 #加速度を0にする
                 a_zero_accel_data = acceldatatozero(raw_accel, 10)
                 keisan_df.at[suffixes[j],"a_zero_accel_data"] = a_zero_accel_data
@@ -202,7 +205,8 @@ def main():
                 #距離求める
                 a_zero_distance = integrate_using_trapezoidal(a_zero_velocity, dt)
                 keisan_df.at[suffixes[j],"a_zero_distance_data"] = a_zero_distance
-                a_zero_all_distancedata.append(all_distance(a_zero_distance))
+                a_zero_all_distancedata[j].append(all_distance(a_zero_distance))
+                hantei_df.at[suffixes[j],"a_zero"] = all_distance(a_zero_distance)
                 #加速度と速度を0にする
                 a_and_v_zero_accel_data = a_zero_accel_data
                 keisan_df.at[suffixes[j],"a_and_v_zero_accel_data"] = a_and_v_zero_accel_data
@@ -212,7 +216,9 @@ def main():
                 #距離求める
                 a_and_v_zero_distance = integrate_using_trapezoidal(a_and_v_zero_velocity, dt)
                 keisan_df.at[suffixes[j],"a_and_v_zero_distance_data"] = a_and_v_zero_distance
-                a_and_v_zero_all_distancedata.append(all_distance(a_and_v_zero_distance))
+                a_and_v_zero_all_distancedata[j].append(all_distance(a_and_v_zero_distance))
+                hantei_df.at[suffixes[j],"a_and_v_zero"] = all_distance(a_and_v_zero_distance)
+
                 #ローパスフィルター
                 lowpass_accel_data = running_average_filter(raw_accel, 5)
                 keisan_df.at[suffixes[j],"lowpass_accel_data"] = lowpass_accel_data
@@ -222,7 +228,9 @@ def main():
                 #距離求める
                 lowpass_distance = integrate_using_trapezoidal(lowpass_velocity, dt)
                 keisan_df.at[suffixes[j],"lowpass_distance_data"] = lowpass_distance
-                lowpass_all_distancedata.append(all_distance(lowpass_distance))
+                lowpass_all_distancedata[j].append(all_distance(lowpass_distance))
+                hantei_df.at[suffixes[j],"lowpass"] = all_distance(lowpass_distance)
+
                 #速度を0にする
                 v_zero_accel_data = raw_accel
                 keisan_df.at[suffixes[j],"v_zero_accel_data"] = v_zero_accel_data
@@ -231,7 +239,9 @@ def main():
                 #距離求める
                 v_zero_distance = integrate_using_trapezoidal(v_zero_velocity, dt)
                 keisan_df.at[suffixes[j],"v_zero_distance_data"] = v_zero_distance
-                v_zero_all_distancedata.append(all_distance(v_zero_distance))
+                v_zero_all_distancedata[j].append(all_distance(v_zero_distance))
+                hantei_df.at[suffixes[j],"v_zero"] = all_distance(v_zero_distance)
+
                 #ローパスフィルターと速度を0にする
                 lowpass_and_v_zero_accel_data = running_average_filter(raw_accel, 5)
                 keisan_df.at[suffixes[j],"lowpass_and_v_zero_accel_data"] = lowpass_and_v_zero_accel_data
@@ -241,7 +251,9 @@ def main():
                 #距離求める
                 lowpass_and_v_zero_distance = integrate_using_trapezoidal(lowpass_and_v_zero_velocity, dt)
                 keisan_df.at[suffixes[j],"lowpass_and_v_zero_distance_data"] = lowpass_and_v_zero_distance
-                lowpass_and_v_zero_all_distancedata.append(all_distance(lowpass_and_v_zero_distance))
+                lowpass_and_v_zero_all_distancedata[j].append(all_distance(lowpass_and_v_zero_distance))
+                hantei_df.at[suffixes[j],"lowpass_and_v_zero"] = all_distance(lowpass_and_v_zero_distance)
+
 
                 # #加速度のグラフ
                 # plt.plot(raw_accel)
@@ -336,48 +348,58 @@ def main():
         hantei_df.to_csv(hantei_filepath, index=False)
         keisan_df.to_csv(keisan_filepath, index=False)
     
-        normal_all_distancedata = np.array(normal_all_distancedata)
-        a_zero_all_distancedata = np.array(a_zero_all_distancedata)
-        a_and_v_zero_all_distancedata = np.array(a_and_v_zero_all_distancedata)
-        lowpass_all_distancedata = np.array(lowpass_all_distancedata)
-        v_zero_all_distancedata = np.array(v_zero_all_distancedata)
-        lowpass_and_v_zero_all_distancedata = np.array(lowpass_and_v_zero_all_distancedata)
-        hantei_zyoken_columns=["_max","_min","_average","_std","_median"]
-        all_hantei_zyoken_columns = [h + z for h in hantei_columns for z in hantei_zyoken_columns]
-        hantei_zyoken_df = pd.DataFrame(index = suffixes,columns=all_hantei_zyoken_columns)
-        hantei_zyoken_df.at[suffixes[j],"raw_average"] = np.average(normal_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"raw_std"] = np.std(normal_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"raw_max"] = np.max(normal_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"raw_min"] = np.min(normal_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"raw_median"] = np.median(normal_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_zero_average"] = np.average(a_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_zero_std"] = np.std(a_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_zero_max"] = np.max(a_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_zero_min"] = np.min(a_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_zero_median"] = np.median(a_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_average"] = np.average(a_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_std"] = np.std(a_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_max"] = np.max(a_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_min"] = np.min(a_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_median"] = np.median(a_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_average"] = np.average(lowpass_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_std"] = np.std(lowpass_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_max"] = np.max(lowpass_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_min"] = np.min(lowpass_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_median"] = np.median(lowpass_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"v_zero_average"] = np.average(v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"v_zero_std"] = np.std(v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"v_zero_max"] = np.max(v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"v_zero_min"] = np.min(v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"v_zero_median"] = np.median(v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_average"] = np.average(lowpass_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_std"] = np.std(lowpass_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_max"] = np.max(lowpass_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_min"] = np.min(lowpass_and_v_zero_all_distancedata)
-        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_median"] = np.median(lowpass_and_v_zero_all_distancedata)
+    normal_all_distancedata = np.array(normal_all_distancedata)
+    a_zero_all_distancedata = np.array(a_zero_all_distancedata)
+    a_and_v_zero_all_distancedata = np.array(a_and_v_zero_all_distancedata)
+    lowpass_all_distancedata = np.array(lowpass_all_distancedata)
+    v_zero_all_distancedata = np.array(v_zero_all_distancedata)
+    lowpass_and_v_zero_all_distancedata = np.array(lowpass_and_v_zero_all_distancedata)
+    hantei_zyoken_columns=["_max","_min","_average","_std","_median"]
+    all_hantei_zyoken_columns = [h + z for h in hantei_columns for z in hantei_zyoken_columns]
+    hantei_zyoken_df = pd.DataFrame(index = suffixes,columns=all_hantei_zyoken_columns)
+
+    for j in range(3):
+        hantei_zyoken_df.at[suffixes[j],"raw_average"] = np.average(normal_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"raw_std"] = np.std(normal_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"raw_max"] = np.max(normal_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"raw_min"] = np.min(normal_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"raw_median"] = np.median(normal_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_zero_average"] = np.average(a_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_zero_std"] = np.std(a_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_zero_max"] = np.max(a_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_zero_min"] = np.min(a_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_zero_median"] = np.median(a_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_average"] = np.average(a_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_std"] = np.std(a_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_max"] = np.max(a_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_min"] = np.min(a_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"a_and_v_zero_median"] = np.median(a_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_average"] = np.average(lowpass_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_std"] = np.std(lowpass_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_max"] = np.max(lowpass_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_min"] = np.min(lowpass_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_median"] = np.median(lowpass_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"v_zero_average"] = np.average(v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"v_zero_std"] = np.std(v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"v_zero_max"] = np.max(v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"v_zero_min"] = np.min(v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"v_zero_median"] = np.median(v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_average"] = np.average(lowpass_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_std"] = np.std(lowpass_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_max"] = np.max(lowpass_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_min"] = np.min(lowpass_and_v_zero_all_distancedata[j])
+        hantei_zyoken_df.at[suffixes[j],"lowpass_and_v_zero_median"] = np.median(lowpass_and_v_zero_all_distancedata[j])
 
     hantei_zyoken_filepath = os.path.join(current_directory, "Calculate",f"hantei_zyoken.csv")
     hantei_zyoken_df.to_csv(hantei_zyoken_filepath, index=False)
+    for i in range(3):
+
+        hantei_df.at[suffixes[i],"raw"] = np.average(normal_all_distancedata[i])
+        hantei_df.at[suffixes[i],"a_zero"] = np.average(a_zero_all_distancedata[i])
+        hantei_df.at[suffixes[i],"a_and_v_zero"] = np.average(a_and_v_zero_all_distancedata[i])
+        hantei_df.at[suffixes[i],"lowpass"] = np.average(lowpass_all_distancedata[i])
+        hantei_df.at[suffixes[i],"v_zero"] = np.average(v_zero_all_distancedata[i])
+        hantei_df.at[suffixes[i],"lowpass_and_v_zero"] = np.average(lowpass_and_v_zero_all_distancedata[i])
 # print(normal_all_distancedata)
     #平均、std、median、max、minの導出
     #まとまったデータ

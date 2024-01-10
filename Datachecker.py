@@ -127,8 +127,8 @@ def acceldatatozero(data, n):
     return data_copy
 
 def main():
-    # folderpath = select_folder()
-    folderpath = r"/Users/member/Desktop/実験/Rikogaku/Datachecker/2023-11-09"
+    folderpath = select_folder()
+    # folderpath = r"/Users/member/Desktop/実験/Rikogaku/Datachecker/2023-11-09"
     fileList1 = list_files_in_directory(folderpath)
     dt = 0.05
     suffixes = ['x', 'y', 'z', 'pitch', 'roll', 'yaw']
@@ -173,7 +173,6 @@ def main():
                 #速度求める
                 normal_velocity = integrate_using_trapezoidal(data[j], dt)
                 keisan_df.at[suffixes[j],"normalvelocitydata"] = normal_velocity
-                
                 # print("normal_velocity=",normal_velocity)
                 #距離求める
                 normal_distance = integrate_using_trapezoidal(normal_velocity, dt)
